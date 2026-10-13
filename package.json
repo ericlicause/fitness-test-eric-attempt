@@ -1,0 +1,27 @@
+{
+  "name": "liftlog",
+  "version": "0.1.0",
+  "description": "Log notepad workouts, track progress, get coaching insights",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node --disable-warning=ExperimentalWarning src/server.js",
+    "demo": "node --disable-warning=ExperimentalWarning scripts/seed-demo.js && node --disable-warning=ExperimentalWarning src/server.js --db data/demo.db",
+    "test": "node --disable-warning=ExperimentalWarning --test test/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ericlicause/fitness-test-eric-attempt.git"
+  },
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ericlicause/fitness-test-eric-attempt/issues"
+  },
+  "homepage": "https://github.com/ericlicause/fitness-test-eric-attempt#readme",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.133.0"
+  },
+  "type": "module",
+  "engines": {
+    "node": ">=22.13"
+  }
+}

@@ -1,0 +1,166 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>LiftLog</title>
+  <meta name="description" content="Log your notepad workouts and track progress over time.">
+  <meta name="theme-color" content="#2a78d6">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/icon.svg">
+  <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><svg aria-hidden="true" width="22" height="22" viewBox="0 0 24 24"><path fill="currentColor" d="M2 10h2V8h2v8H4v-2H2zm4-4h3v12H6zm3 5h6v2H9zm6-5h3v12h-3zm3 2h2v2h2v4h-2v2h-2z"/></svg>LiftLog</div>
+    <nav class="tabs" role="tablist">
+      <button role="tab" data-tab="log" aria-selected="true">Log</button>
+      <button role="tab" data-tab="history">History</button>
+      <button role="tab" data-tab="progress">Progress</button>
+      <button role="tab" data-tab="insights">Insights</button>
+      <button role="tab" data-tab="coach">Coach</button>
+      <button role="tab" data-tab="settings" aria-label="Settings" title="Settings"><svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" style="vertical-align:-4px"><path fill="currentColor" d="M19.4 13a7.5 7.5 0 0 0 0-2l2.1-1.6-2-3.5-2.5 1a7.4 7.4 0 0 0-1.7-1L15 3h-4l-.4 2.9a7.4 7.4 0 0 0-1.7 1l-2.5-1-2 3.5L6.6 11a7.5 7.5 0 0 0 0 2l-2.1 1.6 2 3.5 2.5-1a7.4 7.4 0 0 0 1.7 1L11 21h4l.4-2.9a7.4 7.4 0 0 0 1.7-1l2.5 1 2-3.5zM13 15.5a3.5 3.5 0 1 1 0-7 3.5 3.5 0 0 1 0 7z" transform="translate(-1 0)"/></svg></button>
+    </nav>
+  </header>
+
+  <main>
+    <!-- LOG -->
+    <section id="tab-log" class="tab" role="tabpanel">
+      <div class="card">
+        <div class="row between">
+          <h2 id="log-heading">Log a workout</h2>
+          <button id="cancel-edit" class="link" hidden>Cancel edit</button>
+        </div>
+        <p class="muted">Copy what you wrote in your notepad, or snap a photo of the page. The preview shows exactly what will be saved.</p>
+        <div class="row wrap gap">
+          <label class="field">Date
+            <input type="date" id="log-date">
+          </label>
+          <div class="grow"></div>
+          <label class="btn secondary" id="scan-btn" hidden>
+            <input type="file" id="scan-input" accept="image/*" capture="environment" hidden>
+            <span>Scan notepad photo</span>
+          </label>
+        </div>
+        <div id="scan-status" class="status" hidden></div>
+        <textarea id="log-text" rows="11" spellcheck="false" autocapitalize="sentences" placeholder="Push day
+Bench: 135x10, 155x8, 175x6 @8
+Incline DB 3x10 @ 50
+OHP 95 x 8, 8, 7
+Dips bw x 12, 10
+Plank 3x60s
+Notes: felt strong"></textarea>
+        <details class="cheatsheet">
+          <summary>Shorthand cheat sheet</summary>
+          <table>
+            <tr><td><code>135x10, 155x8</code></td><td>weight × reps, one set each</td></tr>
+            <tr><td><code>95 x 8, 8, 7</code></td><td>bare numbers reuse the last weight</td></tr>
+            <tr><td><code>225x5x3</code></td><td>weight × reps × sets</td></tr>
+            <tr><td><code>3x10 @ 50</code> or <code>225 5x5</code></td><td>sets × reps at a weight</td></tr>
+            <tr><td><code>bw x 12</code>, <code>bw+25 x 6</code></td><td>bodyweight (plus added load)</td></tr>
+            <tr><td><code>20, 15, 12</code></td><td>reps only → bodyweight</td></tr>
+            <tr><td><code>3x60s</code>, <code>1:30</code>, <code>2min</code></td><td>timed sets</td></tr>
+            <tr><td><code>175x6 @8</code> or <code>rpe 8</code></td><td>RPE for that set</td></tr>
+            <tr><td><code>60kg x 8</code></td><td>units (otherwise your default)</td></tr>
+            <tr><td><code>(felt easy)</code></td><td>note on that exercise</td></tr>
+            <tr><td><code>10/12 Leg day</code></td><td>a date line starts a workout — paste several days at once to backfill</td></tr>
+            <tr><td><code>Notes: …</code></td><td>workout notes</td></tr>
+          </table>
+        </details>
+      </div>
+
+      <div class="card">
+        <div class="row between">
+          <h3>Preview</h3>
+          <span id="preview-count" class="muted small"></span>
+        </div>
+        <div id="preview"><p class="muted">Start typing to see the parsed workout.</p></div>
+        <ul id="warnings" class="warnings"></ul>
+        <div class="row end gap">
+          <button id="save-btn" class="btn" disabled>Save workout</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- HISTORY -->
+    <section id="tab-history" class="tab" role="tabpanel" hidden>
+      <div class="row between wrap gap">
+        <h2>History</h2>
+        <input type="search" id="history-filter" placeholder="Filter by exercise or title" aria-label="Filter workouts">
+      </div>
+      <div id="history-list"></div>
+    </section>
+
+    <!-- PROGRESS -->
+    <section id="tab-progress" class="tab" role="tabpanel" hidden>
+      <div class="row between wrap gap">
+        <h2>Progress</h2>
+        <select id="exercise-select" aria-label="Exercise"></select>
+      </div>
+      <div id="progress-body"></div>
+    </section>
+
+    <!-- INSIGHTS -->
+    <section id="tab-insights" class="tab" role="tabpanel" hidden>
+      <h2>Insights</h2>
+      <div id="insights-body"></div>
+    </section>
+
+    <!-- COACH -->
+    <section id="tab-coach" class="tab" role="tabpanel" hidden>
+      <div class="card">
+        <h2>Coach</h2>
+        <p class="muted">Your log, summarized for planning. Copy the summary to a coach or any AI chat, or generate a 4-week plan here.</p>
+        <label class="field block">Goals for your next block
+          <textarea id="goals" rows="3" placeholder="e.g. Bench 225 by spring, add size to shoulders and back, 4 days a week, 60 min sessions"></textarea>
+        </label>
+        <div class="row wrap gap">
+          <button id="copy-summary" class="btn secondary">Copy training summary</button>
+          <button id="gen-plan" class="btn">Generate 4-week plan</button>
+        </div>
+        <p id="ai-off-note" class="muted small" hidden>Plan generation and photo scanning need an Anthropic API key on the server — see the README.</p>
+        <div id="coach-status" class="status" hidden></div>
+      </div>
+      <div class="card" id="plan-card" hidden>
+        <div class="row between"><h3>Your plan</h3><span id="plan-date" class="muted small"></span></div>
+        <div id="plan" class="markdown"></div>
+      </div>
+      <details class="card">
+        <summary><strong>Training summary</strong> <span class="muted small">(what the coach sees)</span></summary>
+        <pre id="summary" class="summary"></pre>
+      </details>
+    </section>
+
+    <!-- SETTINGS -->
+    <section id="tab-settings" class="tab" role="tabpanel" hidden>
+      <div class="card">
+        <h2>Settings</h2>
+        <div class="row wrap gap">
+          <label class="field">Default unit
+            <select id="set-unit"><option value="lb">lb</option><option value="kg">kg</option></select>
+          </label>
+          <label class="field">Bodyweight
+            <input type="number" id="set-bw" min="0" step="0.1" inputmode="decimal" placeholder="optional">
+          </label>
+        </div>
+        <p class="muted small">The unit is used when your notes don't say lb or kg, and for all charts.</p>
+      </div>
+      <div class="card">
+        <h3>Your data</h3>
+        <p class="muted">Everything lives in a SQLite file on the server. Export regularly as a backup.</p>
+        <div class="row wrap gap">
+          <a class="btn secondary" href="/api/export.json" download>Export JSON</a>
+          <a class="btn secondary" href="/api/export.csv" download>Export CSV (spreadsheet)</a>
+          <label class="btn secondary">Import JSON<input type="file" id="import-input" accept="application/json,.json" hidden></label>
+        </div>
+        <div id="import-status" class="status" hidden></div>
+      </div>
+    </section>
+  </main>
+
+  <div id="tooltip" class="tooltip" role="status" hidden></div>
+  <div id="toast" class="toast" role="status" hidden></div>
+  <script type="module" src="/app.js"></script>
+</body>
+</html>
